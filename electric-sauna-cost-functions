@@ -1,0 +1,23 @@
+#!/bin/bash
+
+function __e_get-electricity-24h-data {
+  curl -s "$ELECTRICITY_API_ENDPOINT_URL/$1/$1?lang=fi" -H 'Accept: application/json' -H 'Accept-Encoding: gzip, deflate, br' --compressed
+}
+
+function __e_get-hour {
+  # macOS:
+  # date -j -f "%H:%M" "$1" +%H
+
+  # Ubuntu:
+  date -d "$1" +%H
+}
+
+function __e_filter-requested-and-next-two-hours {
+  jq '. | map(. | select(.timeStampHour=="'"$1"'" or .timeStampHour=="\('$(__e_get-hour $1)' | tonumber+1):00" or .timeStampHour=="\('$(__e_get-hour $1)' | tonumber+2):00"))'
+}
+
+function sauna-get-3h-price {
+  __e_get-electricity-24h-data $1 | \
+    __e_filter-requested-and-next-two-hours $2 | \
+    jq '. | "3 hour prices: [\(map(.value) | join(", "))] \(.[0].unit), 3 hour sauna price: \('$SAUNA_POWER_KILOWATTS'*(3*'$ELECTRICITY_TRANSFER_PRICE'+(map(.value) | add)) | round/100.0) eur"'
+}
