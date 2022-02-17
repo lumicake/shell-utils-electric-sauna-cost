@@ -5,11 +5,12 @@ function __e_get-electricity-24h-data {
 }
 
 function __e_get-hour {
-  # macOS:
-  # date -j -f "%H:%M" "$1" +%H
-
-  # Ubuntu:
-  date -d "$1" +%H
+  if [[ `uname` == "Darwin" ]]; then
+    date -j -f "%H:%M" "$1" +%H
+  else
+  # Linux:
+    date -d "$1" +%H
+  fi
 }
 
 function __e_filter-requested-and-next-two-hours {
