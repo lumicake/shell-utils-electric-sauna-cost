@@ -23,7 +23,7 @@ function __e_get-electricity-24h-data {
 }
 
 function __e_get-hour {
-  if [[ `uname` == "Darwin" ]]; then
+  if [[ $(uname) == "Darwin" ]]; then
     date -j -f "%H:%M" "$1" +%H
   else
   # Linux:
