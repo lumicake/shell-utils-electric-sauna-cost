@@ -1,7 +1,25 @@
 #!/bin/bash
 
-function __e_get-electricity-24h-data {
+function __e_request-24h-electricity-data {
   curl -s "$ELECTRICITY_API_ENDPOINT_URL/$1/$1?lang=fi" -H 'Accept: application/json' -H 'Accept-Encoding: gzip, deflate, br' --compressed
+}
+
+function __e_get-electricity-24h-data {
+  local dataDir="$HOME/.electricity-prices"
+
+  if [[ ! -d "$dataDir" ]]; then
+    mkdir -p "$dataDir"
+  fi
+
+  if [[ ! -f "$dataDir/$1.json" ]]; then
+    __e_request-24h-electricity-data $1 > "$dataDir/$1.json"
+  else
+    if [[ $(cat "$dataDir/$1.json" | jq 'length') != "24" ]]; then
+      __e_request-24h-electricity-data $1 > "$dataDir/$1.json"
+    fi
+  fi
+
+  cat "$dataDir/$1.json"
 }
 
 function __e_get-hour {
