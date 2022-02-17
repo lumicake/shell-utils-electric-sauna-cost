@@ -22,18 +22,9 @@ function __e_get-electricity-24h-data {
   cat "$dataDir/$1.json"
 }
 
-function __e_get-hour {
-  if [[ $(uname) == "Darwin" ]]; then
-    date -j -f "%H:%M" "$1" +%H
-  else
-  # Linux:
-    date -d "$1" +%H
-  fi
-}
-
 function __e_filter-requested-and-next-two-hours {
   local padNumber='tostring | (length | if . >= 2 then "" else "0" * (2 - .) end) as $padding | "\($padding)\(.)"'
-  jq '. | map(. | select(.timeStampHour=="'"$1"'" or .timeStampHour=="\('$(__e_get-hour $1)' | tonumber+1 | '$padNumber'):00" or .timeStampHour=="\('$(__e_get-hour $1)' | tonumber+2 | '$padNumber'):00"))'
+  jq '. | map(. | select(.timeStampHour=="'$1':00" or .timeStampHour=="\('$1' | tonumber+1 | '$padNumber'):00" or .timeStampHour=="\('$1' | tonumber+2 | '$padNumber'):00"))'
 }
 
 function sauna-get-3h-price {
