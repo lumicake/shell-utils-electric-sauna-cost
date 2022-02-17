@@ -14,7 +14,8 @@ function __e_get-hour {
 }
 
 function __e_filter-requested-and-next-two-hours {
-  jq '. | map(. | select(.timeStampHour=="'"$1"'" or .timeStampHour=="\('$(__e_get-hour $1)' | tonumber+1):00" or .timeStampHour=="\('$(__e_get-hour $1)' | tonumber+2):00"))'
+  local padNumber='tostring | (length | if . >= 2 then "" else "0" * (2 - .) end) as $padding | "\($padding)\(.)"'
+  jq '. | map(. | select(.timeStampHour=="'"$1"'" or .timeStampHour=="\('$(__e_get-hour $1)' | tonumber+1 | '$padNumber'):00" or .timeStampHour=="\('$(__e_get-hour $1)' | tonumber+2 | '$padNumber'):00"))'
 }
 
 function sauna-get-3h-price {
