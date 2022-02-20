@@ -22,13 +22,39 @@ function __e_get-electricity-24h-data {
   cat "$dataDir/$1.json"
 }
 
+function __e_add-one-day-to-date {
+  if [[ $(uname) == 'Darwin' ]]; then
+    date -v+1d -jf "%Y-%m-%d" $1 +%Y-%m-%d
+  fi
+}
+
+function __e_add-x-hours-to-timestamp {
+  if [[ $(uname) == 'Darwin' ]]; then
+    date "-v+$1H" -j -f "%Y-%m-%dT%H:%M:%S" "$2T$3:00:00" +%Y-%m-%dT%H:%M:%S
+  fi
+}
+
+function __e_get-electricity-data {
+  local data=$(__e_get-electricity-24h-data $1)
+  if [[ $2 -ge "22" ]]; then
+    local nextDay=$(__e_add-one-day-to-date $1)
+    data='['$data', '$(__e_get-electricity-24h-data $nextDay)']'
+  else
+    data='['$data']'
+  fi
+
+  echo $data | jq 'map(.[])'
+}
+
 function __e_filter-requested-and-next-two-hours {
-  local padNumber='tostring | (length | if . >= 2 then "" else "0" * (2 - .) end) as $padding | "\($padding)\(.)"'
-  jq '. | map(. | select(.timeStampHour=="'$1':00" or .timeStampHour=="\('$1' | tonumber+1 | '$padNumber'):00" or .timeStampHour=="\('$1' | tonumber+2 | '$padNumber'):00"))'
+  local filterFirstHour='.timeStamp == "'$(__e_add-x-hours-to-timestamp 0 $1 $2)'"'
+  local filterSecondHour='.timeStamp == "'$(__e_add-x-hours-to-timestamp 1 $1 $2)'"'
+  local filterThirdHour='.timeStamp == "'$(__e_add-x-hours-to-timestamp 2 $1 $2)'"'
+  jq '. | map(. | select('$filterFirstHour' or '$filterSecondHour' or '$filterThirdHour'))'
 }
 
 function sauna-get-3h-price {
-  __e_get-electricity-24h-data $1 | \
-    __e_filter-requested-and-next-two-hours $2 | \
+  __e_get-electricity-data $1 $2 | \
+    __e_filter-requested-and-next-two-hours $1 $2 | \
     jq '. | "3 hour prices: [\(map(.value) | join(", "))] \(.[0].unit), 3 hour sauna price: \('$SAUNA_POWER_KILOWATTS'*(3*'$ELECTRICITY_TRANSFER_PRICE'+(map(.value) | add)) | round/100.0) eur"'
 }
