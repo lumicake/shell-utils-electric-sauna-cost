@@ -62,5 +62,5 @@ function __e_filter-requested-and-next-two-hours {
 function sauna-get-3h-price {
   __e_get-electricity-data $1 $2 | \
     __e_filter-requested-and-next-two-hours $1 $2 | \
-    jq '. | "3 hour prices: [\(map(.value) | join(", "))] \(.[0].unit), 3 hour sauna price: \('$SAUNA_POWER_KILOWATTS'*(3*'$ELECTRICITY_TRANSFER_PRICE'+(map(.value) | add)) | round/100.0) eur"'
+    jq '. | "3 hour prices: [\(map(.value) | join(", "))] \(.[0].unit), 3 hour sauna price: \('$SAUNA_POWER_KILOWATTS'*(3*'$ELECTRICITY_TRANSFER_PRICE'+(map(.value*1.24) | add)) | round/100.0) eur"'
 }
