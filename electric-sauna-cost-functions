@@ -36,7 +36,7 @@ function __e_add-x-hours-to-timestamp {
   else
     local timeZone=$(date -d $2 +%z)
     local dateInput="$2T$3:00:00 $timeZone +$1 hours"
-    date -d $dateInput +%Y-%m-%dT%H:%M:%S
+    date -d "$dateInput" +%Y-%m-%dT%H:%M:%S
   fi
 }
 
@@ -56,7 +56,7 @@ function __e_filter-requested-and-next-two-hours {
   local filterFirstHour='.timeStamp == "'$(__e_add-x-hours-to-timestamp 0 $1 $2)'"'
   local filterSecondHour='.timeStamp == "'$(__e_add-x-hours-to-timestamp 1 $1 $2)'"'
   local filterThirdHour='.timeStamp == "'$(__e_add-x-hours-to-timestamp 2 $1 $2)'"'
-  jq '. | map(. | select('$filterFirstHour' or '$filterSecondHour' or '$filterThirdHour'))'
+  jq ". | map(. | select($filterFirstHour or $filterSecondHour or $filterThirdHour))"
 }
 
 function sauna-get-3h-price {
