@@ -60,7 +60,14 @@ function __e_filter-requested-and-next-two-hours {
 }
 
 function sauna-get-3h-price {
-  __e_get-electricity-data $1 $2 | \
-    __e_filter-requested-and-next-two-hours $1 $2 | \
+  local argDate=$1
+  local argHour=$2
+
+  if [[ $2 -ge "24" ]]; then
+    argDate=$(__e_add-one-day-to-date $1)
+    argHour=$(($2 - 24))
+  fi
+  __e_get-electricity-data $argDate $argHour | \
+    __e_filter-requested-and-next-two-hours $argDate $argHour | \
     jq '. | "3 hour prices: [\(map(.value) | join(", "))] \(.[0].unit), 3 hour sauna price: \('$SAUNA_POWER_KILOWATTS'*(3*'$ELECTRICITY_TRANSFER_PRICE'+(map(.value*1.24) | add)) | round/100.0) eur"'
 }
