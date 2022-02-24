@@ -75,5 +75,5 @@ function sauna-get-3h-price {
   echo "---------------------------------------------------------------------"
   __e_get-electricity-data $argDate $argHour | \
     __e_filter-requested-and-next-two-hours $argDate $argHour | \
-    jq -r '. | "3 hour prices: [\(map(.value) | join(", "))] \(.[0].unit), 3 hour sauna price: \('$SAUNA_POWER_KILOWATTS'*(3*'$ELECTRICITY_TRANSFER_PRICE'+(map(.value*1.24) | add)) | round/100.0) eur"'
+    jq -r '. | "3 hour prices: [\(map(.value) | join(", "))] \(.[0].unit)\ncost of running the sauna for 3h: \('$SAUNA_POWER_KILOWATTS'*(3*'$ELECTRICITY_TRANSFER_PRICE'+(map(.value*1.24) | add)) | round/100.0) eur"'
 }
