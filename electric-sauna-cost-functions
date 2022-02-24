@@ -25,12 +25,18 @@ function __e_get-electricity-24h-data {
 function __e_add-one-day-to-date {
   if [[ $(uname) == 'Darwin' ]]; then
     date -v+1d -jf "%Y-%m-%d" $1 +%Y-%m-%d
+  else
+    date -d "$1 +1 day" +%Y-%m-%d
   fi
 }
 
 function __e_add-x-hours-to-timestamp {
   if [[ $(uname) == 'Darwin' ]]; then
     date "-v+$1H" -j -f "%Y-%m-%dT%H:%M:%S" "$2T$3:00:00" +%Y-%m-%dT%H:%M:%S
+  else
+    local timeZone=$(date -d $2 +%z)
+    local dateInput="$2T$3:00:00 $timeZone +$1 hours"
+    date -d $dateInput +%Y-%m-%dT%H:%M:%S
   fi
 }
 
