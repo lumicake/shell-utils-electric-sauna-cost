@@ -77,3 +77,18 @@ function sauna-get-3h-price {
     __e_filter-requested-and-next-two-hours $argDate $argHour | \
     jq -r '. | "3 hour prices: [\(map(.value) | join(", "))] \(.[0].unit)\nCost of running the sauna for 3 h: \('$SAUNA_POWER_KILOWATTS'*(3*'$ELECTRICITY_TRANSFER_PRICE'+(map(.value*1.24) | add)) | round/100.0) eur"'
 }
+
+# Takes in times like %H:%M and outputs the minutes as a floating point number
+# eg 17:32 as input -> 0.53 as output
+function __e_time-minutes-to-hours {
+  bc -l <<< "scale=2; $(date -d $1 +%M)/60"
+}
+
+function electricity-usage-cost-from-to {
+  local argDate=$1
+  local argStartTime=$2
+  local argEndTime=$3
+
+  local startHourMinutesElapsedInHours=$(__e_time-minutes-to-hours $2)
+  local startHourMinutesLeftInHours=$(bc -l <<< "1-$startHourMinutesElapsedInHours")
+}
